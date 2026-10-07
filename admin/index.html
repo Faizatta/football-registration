@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Football Registration</title>
+    <link rel="stylesheet" href="/src/style.css">
+  </head>
+  <body>
+    <div class="container admin-container" style="display: none;" id="main-content">
+      <div class="header-actions">
+        <h1>Admin Dashboard</h1>
+        <button id="logout-btn" class="btn-secondary">Logout</button>
+      </div>
+
+      <div class="header-actions">
+        <input type="text" id="search-input" class="search-box" placeholder="Search players by name or kit...">
+        <button id="export-btn">Export Players (CSV)</button>
+      </div>
+
+      <div id="dashboard-alert" class="alert"></div>
+
+      <div class="table-responsive">
+        <table id="players-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Kit Number</th>
+              <th>Chest Size</th>
+              <th>Length Size</th>
+              <th>Kit Size</th>
+              <th>Registration Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="players-tbody">
+            <!-- Rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h2>Edit Player</h2>
+        <div id="edit-alert" class="alert error"></div>
+        <form id="edit-form">
+          <input type="hidden" id="edit-original-kit">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="edit-name" required>
+          </div>
+          <div class="form-group">
+            <label>Kit Number</label>
+            <input type="number" id="edit-kit" required min="1">
+          </div>
+          <div class="form-group">
+            <label>Chest Size</label>
+            <input type="text" id="edit-chest" required>
+          </div>
+          <div class="form-group">
+            <label>Length Size</label>
+            <input type="text" id="edit-length" required>
+          </div>
+          <div class="form-group">
+            <label>Kit Size</label>
+            <select id="edit-kit-size" required style="width:100%; padding:8px;">
+              <option value="Small">Small</option>
+              <option value="Medium">Medium</option>
+              <option value="Large">Large</option>
+              <option value="2XL">2XL</option>
+              <option value="3XL">3XL</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="cancel-edit" class="btn-secondary">Cancel</button>
+            <button type="submit" id="save-edit">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="delete-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h2>Confirm Delete</h2>
+        <p>Are you sure you want to delete this player?</p>
+        <div class="modal-actions">
+          <button type="button" id="cancel-delete" class="btn-secondary">Cancel</button>
+          <button type="button" id="confirm-delete" class="btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/admin.js"></script>
+  </body>
+</html>

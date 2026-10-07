@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Football Player Registration</title>
+    <link rel="stylesheet" href="/src/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>FOOTBALL PLAYER REGISTRATION</h1>
+      
+      <div id="global-alert" class="alert"></div>
+
+      <form id="registration-form">
+        <div class="form-group">
+          <label for="playerName">Player Name</label>
+          <input type="text" id="playerName" name="playerName" required placeholder="John Doe">
+        </div>
+
+        <div class="form-group">
+          <label for="kitNumber">Kit Number</label>
+          <input type="number" id="kitNumber" name="kitNumber" required min="1" placeholder="10">
+          <div id="kit-status" class="status-message"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="chestSize">Chest Size</label>
+          <input type="text" id="chestSize" name="chestSize" required placeholder="22 inches">
+        </div>
+
+        <div class="form-group">
+          <label for="lengthSize">Length Size</label>
+          <input type="text" id="lengthSize" name="lengthSize" required placeholder="30 inches">
+        </div>
+
+        <div class="form-group">
+          <label>Kit Size</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="kitSize" value="Small" required> Small
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="kitSize" value="Medium"> Medium
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="kitSize" value="Large"> Large
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="kitSize" value="2XL"> 2XL
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="kitSize" value="3XL"> 3XL
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" id="register-btn" disabled>REGISTER PLAYER</button>
+      </form>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
