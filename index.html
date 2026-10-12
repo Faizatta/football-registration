@@ -24,33 +24,60 @@
           <div id="kit-status" class="status-message"></div>
         </div>
 
+        <div class="size-chart-banner">
+          <button type="button" id="open-size-chart-btn" class="btn-outline">
+            📏 View Official Size Chart
+          </button>
+        </div>
+
         <div class="form-group">
-          <label for="chestSize">Chest Size</label>
-          <input type="text" id="chestSize" name="chestSize" required placeholder="22 inches">
+          <label for="chestSize">Chest Size (Width)</label>
+          <input type="text" id="chestSize" name="chestSize" required placeholder="e.g. 20 inches">
         </div>
 
         <div class="form-group">
           <label for="lengthSize">Length Size</label>
-          <input type="text" id="lengthSize" name="lengthSize" required placeholder="30 inches">
+          <input type="text" id="lengthSize" name="lengthSize" required placeholder="e.g. 28 inches">
         </div>
 
         <div class="form-group">
           <label>Kit Size</label>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" name="kitSize" value="Small" required> Small
+          <div class="size-grid" id="size-options">
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="4XS" required> 4XS
             </label>
-            <label class="radio-label">
-              <input type="radio" name="kitSize" value="Medium"> Medium
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="3XS"> 3XS
             </label>
-            <label class="radio-label">
-              <input type="radio" name="kitSize" value="Large"> Large
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="2XS"> 2XS
             </label>
-            <label class="radio-label">
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="XS"> XS
+            </label>
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="S"> S
+            </label>
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="M"> M
+            </label>
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="L"> L
+            </label>
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="XL"> XL
+            </label>
+            <label class="size-pill">
               <input type="radio" name="kitSize" value="2XL"> 2XL
             </label>
-            <label class="radio-label">
+            <label class="size-pill">
               <input type="radio" name="kitSize" value="3XL"> 3XL
+            </label>
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="4XL"> 4XL
+            </label>
+            <label class="size-pill">
+              <input type="radio" name="kitSize" value="5XL"> 5XL
             </label>
           </div>
         </div>
@@ -58,6 +85,23 @@
         <button type="submit" id="register-btn" disabled>REGISTER PLAYER</button>
       </form>
     </div>
+
+    <!-- Size Chart Modal -->
+    <div id="size-chart-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Official Size Chart</h2>
+          <button type="button" id="close-size-chart-btn" class="close-btn" aria-label="Close">&times;</button>
+        </div>
+        <div class="size-chart-body">
+          <img src="/size-chart.png" alt="Official Size Chart" class="size-chart-img" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="close-size-chart-bottom-btn" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

@@ -112,6 +112,7 @@ form.addEventListener('submit', async (e) => {
 
     showAlert('✓ Player registered successfully!', 'success');
     form.reset();
+    document.querySelectorAll('.size-pill').forEach(p => p.classList.remove('selected'));
     kitInput.className = '';
     kitStatus.textContent = '';
     isKitAvailable = false;
@@ -132,4 +133,76 @@ form.addEventListener('submit', async (e) => {
     registerBtn.textContent = 'REGISTER PLAYER';
     updateButtonState();
   }
+});
+
+// Size Chart Modal Controls
+const sizeChartModal = document.getElementById('size-chart-modal');
+const openSizeChartBtn = document.getElementById('open-size-chart-btn');
+const closeSizeChartBtn = document.getElementById('close-size-chart-btn');
+const closeSizeChartBottomBtn = document.getElementById('close-size-chart-bottom-btn');
+
+if (openSizeChartBtn && sizeChartModal) {
+  openSizeChartBtn.addEventListener('click', () => {
+    sizeChartModal.classList.add('active');
+  });
+
+  const closeSizeChart = () => {
+    sizeChartModal.classList.remove('active');
+  };
+
+  if (closeSizeChartBtn) closeSizeChartBtn.addEventListener('click', closeSizeChart);
+  if (closeSizeChartBottomBtn) closeSizeChartBottomBtn.addEventListener('click', closeSizeChart);
+
+  sizeChartModal.addEventListener('click', (e) => {
+    if (e.target === sizeChartModal) closeSizeChart();
+  });
+}
+
+// Chart data mapping
+const sizeChartData = {
+  '4XS': { width: 14, length: 18 },
+  '3XS': { width: 15, length: 20 },
+  '2XS': { width: 16, length: 22 },
+  'XS':  { width: 17, length: 24 },
+  'S':   { width: 18, length: 26 },
+  'M':   { width: 19, length: 27 },
+  'L':   { width: 20, length: 28 },
+  'XL':  { width: 21, length: 29 },
+  '2XL': { width: 22, length: 29 },
+  '3XL': { width: 23, length: 30 },
+  '4XL': { width: 24, length: 31 },
+  '5XL': { width: 25, length: 32 }
+};
+
+const chestInput = document.getElementById('chestSize');
+const lengthInput = document.getElementById('lengthSize');
+const sizePills = document.querySelectorAll('.size-pill');
+
+sizePills.forEach(pill => {
+  const radio = pill.querySelector('input[type="radio"]');
+  radio.addEventListener('change', () => {
+    sizePills.forEach(p => p.classList.remove('selected'));
+    if (radio.checked) {
+      pill.classList.add('selected');
+      const data = sizeChartData[radio.value];
+      if (data) {
+        if (!chestInput.value || chestInput.dataset.autoFilled === "true") {
+          chestInput.value = `${data.width} inches`;
+          chestInput.dataset.autoFilled = "true";
+        }
+        if (!lengthInput.value || lengthInput.dataset.autoFilled === "true") {
+          lengthInput.value = `${data.length} inches`;
+          lengthInput.dataset.autoFilled = "true";
+        }
+      }
+    }
+    updateButtonState();
+  });
+});
+
+chestInput.addEventListener('input', () => {
+  chestInput.dataset.autoFilled = "false";
+});
+lengthInput.addEventListener('input', () => {
+  lengthInput.dataset.autoFilled = "false";
 });

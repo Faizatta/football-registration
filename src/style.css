@@ -216,26 +216,131 @@ th {
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0,0,0,0.6);
   display: none;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 .modal-overlay.active {
   display: flex;
 }
 .modal-content {
   background-color: white;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 24px;
+  border-radius: 12px;
   width: 90%;
-  max-width: 400px;
+  max-width: 440px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.modal-header h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.close-btn:hover {
+  background-color: #f3f4f6;
+  color: #111827;
 }
 .modal-actions {
   display: flex;
   gap: 10px;
   margin-top: 20px;
+}
+
+/* Size Chart styles */
+.size-chart-banner {
+  margin: 15px 0 20px 0;
+}
+.btn-outline {
+  width: 100%;
+  background-color: #f0fdf4;
+  color: var(--primary-dark);
+  border: 1.5px dashed var(--primary);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.btn-outline:hover {
+  background-color: #dcfce7;
+  border-style: solid;
+}
+.size-chart-img {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+/* Size Grid Pills */
+.size-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+@media (max-width: 480px) {
+  .size-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.size-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  background-color: #fafafa;
+}
+.size-pill input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.size-pill:hover {
+  border-color: var(--primary);
+  background-color: #f0fdf4;
+}
+.size-pill.selected {
+  border-color: var(--primary);
+  background-color: var(--primary);
+  color: white;
 }
