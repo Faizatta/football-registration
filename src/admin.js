@@ -263,16 +263,13 @@ function renderTable(data) {
       <td>${escapeHTML(player.lengthSize)}</td>
       <td><span style="background:#f3f4f6; padding: 2px 8px; border-radius: 4px; font-weight:600;">${escapeHTML(player.kitSize)}</span></td>
       <td>
-        <div class="payment-cell">
-          <input type="checkbox" class="payment-checkbox" data-id="${player.id}" ${status === 'paid' ? 'checked' : ''} title="Check for Full Paid (Rs. 1,700), uncheck for Unpaid (Rs. 0)">
-          <div style="flex-grow: 1;">
-            ${badgeHtml}
-          </div>
-          <button type="button" class="quick-pay-btn open-payment-modal-btn" data-id="${player.id}" title="Set partial or custom payment amount">✏️ Pay</button>
+        <div class="payment-cell-badge">
+          ${badgeHtml}
         </div>
       </td>
       <td style="font-size: 0.85rem; color: #4b5563;">${escapeHTML(dateStr)}</td>
       <td class="actions">
+        <button class="btn-pay open-payment-modal-btn" data-id="${player.id}" title="Update payment for this player">Pay</button>
         <button class="btn-secondary edit-btn" data-id="${player.id}">Edit</button>
         <button class="btn-danger delete-btn" data-id="${player.id}">Delete</button>
       </td>
@@ -280,17 +277,7 @@ function renderTable(data) {
     playersTbody.appendChild(tr);
   });
 
-  // Checkbox toggle: Full Paid (1700) <-> Unpaid (0)
-  document.querySelectorAll('.payment-checkbox').forEach(cb => {
-    cb.addEventListener('change', async (e) => {
-      const id = e.target.dataset.id;
-      const isChecked = e.target.checked;
-      const newAmount = isChecked ? KIT_COST : 0;
-      await setPlayerPayment(id, newAmount);
-    });
-  });
-
-  // Open Quick Payment Modal
+  // Open Quick Payment Modal via Pay button in Actions
   document.querySelectorAll('.open-payment-modal-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;

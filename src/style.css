@@ -305,6 +305,16 @@ button:disabled {
   border-color: #9ca3af;
 }
 
+.btn-pay {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  font-weight: 600;
+}
+.btn-pay:hover {
+  background-color: var(--primary-dark);
+}
+
 .btn-secondary {
   background-color: #4b5563;
 }
@@ -354,7 +364,14 @@ th {
   font-size: 0.85rem;
 }
 
-/* Payment Checkbox & Badges */
+/* Payment Badges */
+.payment-cell-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
 .payment-cell {
   display: flex;
   align-items: center;
