@@ -163,6 +163,148 @@ button:disabled {
   padding: 8px 16px;
 }
 
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.stat-sub {
+  font-size: 0.82rem;
+  margin-top: 5px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.stat-total { border-top: 4px solid #3b82f6; }
+.stat-paid { border-top: 4px solid #10b981; }
+.stat-paid .stat-sub { color: #059669; }
+.stat-unpaid { border-top: 4px solid #f59e0b; }
+.stat-unpaid .stat-sub { color: #d97706; }
+.stat-rate { border-top: 4px solid #8b5cf6; }
+
+/* Toolbar and Filter Tabs */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.filter-tabs {
+  display: inline-flex;
+  background: #e5e7eb;
+  padding: 4px;
+  border-radius: 8px;
+  gap: 4px;
+}
+
+.filter-tab {
+  background: none;
+  border: none;
+  padding: 6px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #4b5563;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: auto;
+}
+
+.filter-tab:hover {
+  color: #111827;
+}
+
+.filter-tab.active {
+  background: #ffffff;
+  color: var(--primary-dark);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-grow: 1;
+  justify-content: flex-end;
+}
+
+.toolbar-actions .search-box {
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.toolbar-actions button {
+  width: auto;
+  padding: 9px 15px;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-outline-admin {
+  background: #ffffff;
+  color: #374151;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline-admin:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
 .btn-secondary {
   background-color: #4b5563;
 }
@@ -188,7 +330,7 @@ button:disabled {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 700px;
+  min-width: 760px;
 }
 
 th, td {
@@ -210,6 +352,82 @@ th {
 .actions button {
   padding: 5px 10px;
   font-size: 0.85rem;
+}
+
+/* Payment Checkbox & Badges */
+.payment-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.payment-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.badge-paid {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badge-unpaid {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.checkbox-group {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.override-hint {
+  font-size: 0.78rem;
+  color: #047857;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.modal-subtitle {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 15px;
+  line-height: 1.4;
 }
 
 /* Modal */

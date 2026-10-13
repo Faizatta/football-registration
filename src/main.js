@@ -88,6 +88,7 @@ form.addEventListener('submit', async (e) => {
     chestSize: formData.get('chestSize'),
     lengthSize: formData.get('lengthSize'),
     kitSize: formData.get('kitSize'),
+    isPaid: false,
     createdAt: serverTimestamp()
   };
 

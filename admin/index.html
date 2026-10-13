@@ -13,9 +13,42 @@
         <button id="logout-btn" class="btn-secondary">Logout</button>
       </div>
 
-      <div class="header-actions">
-        <input type="text" id="search-input" class="search-box" placeholder="Search players by name or kit...">
-        <button id="export-btn">Export Players (CSV)</button>
+      <!-- Payment & Registration Stats -->
+      <div class="stats-grid">
+        <div class="stat-card stat-total">
+          <div class="stat-label">Total Players</div>
+          <div class="stat-value" id="stat-total-players">0</div>
+          <div class="stat-sub" id="stat-total-amount">Total Value: Rs. 0</div>
+        </div>
+        <div class="stat-card stat-paid">
+          <div class="stat-label">Payments Received</div>
+          <div class="stat-value" id="stat-paid-count">0</div>
+          <div class="stat-sub" id="stat-paid-amount">Collected: Rs. 0</div>
+        </div>
+        <div class="stat-card stat-unpaid">
+          <div class="stat-label">Pending Payments</div>
+          <div class="stat-value" id="stat-unpaid-count">0</div>
+          <div class="stat-sub" id="stat-unpaid-amount">Pending: Rs. 0</div>
+        </div>
+        <div class="stat-card stat-rate">
+          <div class="stat-label">Kit Rate</div>
+          <div class="stat-value">Rs. 1,700</div>
+          <div class="stat-sub">Fixed per player kit</div>
+        </div>
+      </div>
+
+      <!-- Filter Tabs and Toolbar -->
+      <div class="toolbar">
+        <div class="filter-tabs">
+          <button type="button" class="filter-tab active" data-filter="all" id="filter-all">All (<span id="count-all">0</span>)</button>
+          <button type="button" class="filter-tab" data-filter="paid" id="filter-paid">Paid (<span id="count-paid">0</span>)</button>
+          <button type="button" class="filter-tab" data-filter="unpaid" id="filter-unpaid">Unpaid (<span id="count-unpaid">0</span>)</button>
+        </div>
+        <div class="toolbar-actions">
+          <input type="text" id="search-input" class="search-box" placeholder="Search by name, kit #, size...">
+          <button type="button" id="add-player-btn" class="btn-primary">+ Add Player</button>
+          <button type="button" id="export-btn" class="btn-outline-admin">Export (CSV)</button>
+        </div>
       </div>
 
       <div id="dashboard-alert" class="alert"></div>
@@ -24,11 +57,12 @@
         <table id="players-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Kit Number</th>
-              <th>Chest Size</th>
-              <th>Length Size</th>
-              <th>Kit Size</th>
+              <th>Player Name</th>
+              <th>Kit #</th>
+              <th>Chest</th>
+              <th>Length</th>
+              <th>Size</th>
+              <th>Payment (Rs. 1,700)</th>
               <th>Registration Date</th>
               <th>Actions</th>
             </tr>
@@ -40,12 +74,75 @@
       </div>
     </div>
 
+    <!-- Add Player Modal -->
+    <div id="add-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New Player</h2>
+          <button type="button" id="cancel-add-x" class="close-btn">&times;</button>
+        </div>
+        <p class="modal-subtitle">Admin can assign any kit number (even if already taken by another player).</p>
+        <div id="add-alert" class="alert error"></div>
+        <form id="add-form">
+          <div class="form-group">
+            <label>Player Name</label>
+            <input type="text" id="add-name" required placeholder="e.g. Ali Khan">
+          </div>
+          <div class="form-group">
+            <label>Kit Number</label>
+            <input type="number" id="add-kit" required min="1" placeholder="e.g. 7">
+            <div class="override-hint">⚡ Admin override: Can give any number irrespective of availability</div>
+          </div>
+          <div class="form-group">
+            <label>Chest Size (Width)</label>
+            <input type="text" id="add-chest" required placeholder="e.g. 20 inches">
+          </div>
+          <div class="form-group">
+            <label>Length Size</label>
+            <input type="text" id="add-length" required placeholder="e.g. 28 inches">
+          </div>
+          <div class="form-group">
+            <label>Kit Size</label>
+            <select id="add-kit-size" required style="width:100%; padding:8px;">
+              <option value="4XS">4XS</option>
+              <option value="3XS">3XS</option>
+              <option value="2XS">2XS</option>
+              <option value="XS">XS</option>
+              <option value="S">S (Small)</option>
+              <option value="M" selected>M (Medium)</option>
+              <option value="L">L (Large)</option>
+              <option value="XL">XL</option>
+              <option value="2XL">2XL</option>
+              <option value="3XL">3XL</option>
+              <option value="4XL">4XL</option>
+              <option value="5XL">5XL</option>
+            </select>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="add-paid">
+              <span>Payment Received (Rs. 1,700)</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="cancel-add" class="btn-secondary">Cancel</button>
+            <button type="submit" id="save-add">Save Player</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Edit Modal -->
     <div id="edit-modal" class="modal-overlay">
       <div class="modal-content">
-        <h2>Edit Player</h2>
+        <div class="modal-header">
+          <h2>Edit Player</h2>
+          <button type="button" id="cancel-edit-x" class="close-btn">&times;</button>
+        </div>
+        <p class="modal-subtitle">Admin can assign any kit number (even if already taken by another player).</p>
         <div id="edit-alert" class="alert error"></div>
         <form id="edit-form">
+          <input type="hidden" id="edit-player-id">
           <input type="hidden" id="edit-original-kit">
           <div class="form-group">
             <label>Name</label>
@@ -54,6 +151,7 @@
           <div class="form-group">
             <label>Kit Number</label>
             <input type="number" id="edit-kit" required min="1">
+            <div class="override-hint">⚡ Admin override: Can give any number irrespective of availability</div>
           </div>
           <div class="form-group">
             <label>Chest Size</label>
@@ -82,6 +180,12 @@
               <option value="Medium">Medium</option>
               <option value="Large">Large</option>
             </select>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="edit-paid">
+              <span>Payment Received (Rs. 1,700)</span>
+            </label>
           </div>
           <div class="modal-actions">
             <button type="button" id="cancel-edit" class="btn-secondary">Cancel</button>
