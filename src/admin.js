@@ -14,16 +14,29 @@ const dashboardAlert = document.getElementById('dashboard-alert');
 // Stats Elements
 const statTotalPlayers = document.getElementById('stat-total-players');
 const statTotalAmount = document.getElementById('stat-total-amount');
-const statPaidCount = document.getElementById('stat-paid-count');
 const statPaidAmount = document.getElementById('stat-paid-amount');
-const statUnpaidCount = document.getElementById('stat-unpaid-count');
+const statPaidBreakdown = document.getElementById('stat-paid-breakdown');
 const statUnpaidAmount = document.getElementById('stat-unpaid-amount');
+const statUnpaidCount = document.getElementById('stat-unpaid-count');
 const countAll = document.getElementById('count-all');
 const countPaid = document.getElementById('count-paid');
+const countPartial = document.getElementById('count-partial');
 const countUnpaid = document.getElementById('count-unpaid');
 
 // Filter Tabs
 const filterTabs = document.querySelectorAll('.filter-tab');
+
+// Quick Payment Modal Elements
+const paymentModal = document.getElementById('payment-modal');
+const paymentForm = document.getElementById('payment-form');
+const paymentPlayerInfo = document.getElementById('payment-player-info');
+const quickPaymentPlayerId = document.getElementById('quick-payment-player-id');
+const quickPaidAmountInput = document.getElementById('quick-paid-amount');
+const quickPaymentHint = document.getElementById('quick-payment-hint');
+const cancelPaymentBtn = document.getElementById('cancel-payment');
+const cancelPaymentXBtn = document.getElementById('cancel-payment-x');
+const savePaymentBtn = document.getElementById('save-payment');
+const paymentAlert = document.getElementById('payment-alert');
 
 // Add Player Modal Elements
 const addModal = document.getElementById('add-modal');
@@ -33,6 +46,8 @@ const cancelAddBtn = document.getElementById('cancel-add');
 const cancelAddXBtn = document.getElementById('cancel-add-x');
 const saveAddBtn = document.getElementById('save-add');
 const addAlert = document.getElementById('add-alert');
+const addPaidAmountInput = document.getElementById('add-paid-amount');
+const addPaymentHint = document.getElementById('add-payment-hint');
 
 // Edit Modal Elements
 const editModal = document.getElementById('edit-modal');
@@ -41,6 +56,8 @@ const cancelEditBtn = document.getElementById('cancel-edit');
 const cancelEditXBtn = document.getElementById('cancel-edit-x');
 const editAlert = document.getElementById('edit-alert');
 const saveEditBtn = document.getElementById('save-edit');
+const editPaidAmountInput = document.getElementById('edit-paid-amount');
+const editPaymentHint = document.getElementById('edit-payment-hint');
 
 // Delete Modal Elements
 const deleteModal = document.getElementById('delete-modal');
@@ -49,7 +66,7 @@ const confirmDeleteBtn = document.getElementById('confirm-delete');
 
 let players = [];
 let deletePlayerId = null;
-let currentFilter = 'all'; // 'all' | 'paid' | 'unpaid'
+let currentFilter = 'all'; // 'all' | 'paid' | 'partial' | 'unpaid'
 let currentSearch = '';
 
 onAuthStateChanged(auth, (user) => {
@@ -65,6 +82,70 @@ logoutBtn.addEventListener('click', () => {
   signOut(auth);
 });
 
+// Helper to determine payment info for any player
+function getPaymentInfo(player) {
+  let amount = 0;
+  if (typeof player.paidAmount === 'number') {
+    amount = Math.max(0, player.paidAmount);
+  } else if (player.isPaid === true) {
+    amount = KIT_COST;
+  } else {
+    amount = 0;
+  }
+
+  const remaining = Math.max(0, KIT_COST - amount);
+  let status = 'unpaid';
+  if (amount >= KIT_COST) {
+    status = 'paid';
+  } else if (amount > 0) {
+    status = 'partial';
+  }
+
+  return { amount, remaining, status };
+}
+
+function updatePaymentHint(inputEl, hintEl) {
+  if (!inputEl || !hintEl) return;
+  const val = Number(inputEl.value) || 0;
+  const rem = Math.max(0, KIT_COST - val);
+  if (val >= KIT_COST) {
+    hintEl.innerHTML = `Payment Status: <strong style="color:#065f46;">Full Paid (Rs. ${val.toLocaleString()})</strong> • Due: <strong>Rs. 0</strong>`;
+  } else if (val > 0) {
+    hintEl.innerHTML = `Payment Status: <strong style="color:#3730a3;">Partial Paid (Rs. ${val.toLocaleString()})</strong> • Remaining Due: <strong style="color:#b91c1c;">Rs. ${rem.toLocaleString()}</strong>`;
+  } else {
+    hintEl.innerHTML = `Payment Status: <strong style="color:#991b1b;">Unpaid</strong> • Remaining Due: <strong>Rs. ${KIT_COST.toLocaleString()}</strong>`;
+  }
+}
+
+// Preset button handlers
+document.querySelectorAll('.btn-preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.target;
+    const val = Number(btn.dataset.val);
+
+    if (target === 'quick' && quickPaidAmountInput) {
+      quickPaidAmountInput.value = val;
+      updatePaymentHint(quickPaidAmountInput, quickPaymentHint);
+    } else if (target === 'add' && addPaidAmountInput) {
+      addPaidAmountInput.value = val;
+      updatePaymentHint(addPaidAmountInput, addPaymentHint);
+    } else if (target === 'edit' && editPaidAmountInput) {
+      editPaidAmountInput.value = val;
+      updatePaymentHint(editPaidAmountInput, editPaymentHint);
+    }
+  });
+});
+
+if (quickPaidAmountInput) {
+  quickPaidAmountInput.addEventListener('input', () => updatePaymentHint(quickPaidAmountInput, quickPaymentHint));
+}
+if (addPaidAmountInput) {
+  addPaidAmountInput.addEventListener('input', () => updatePaymentHint(addPaidAmountInput, addPaymentHint));
+}
+if (editPaidAmountInput) {
+  editPaidAmountInput.addEventListener('input', () => updatePaymentHint(editPaidAmountInput, editPaymentHint));
+}
+
 function loadPlayers() {
   const q = query(collection(db, 'players'));
   onSnapshot(q, (snapshot) => {
@@ -72,7 +153,7 @@ function loadPlayers() {
     snapshot.forEach((docSnap) => {
       players.push({ id: docSnap.id, ...docSnap.data() });
     });
-    // Sort by registration date descending, fallback to kit number
+
     players.sort((a, b) => {
       const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
       const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
@@ -89,37 +170,53 @@ function loadPlayers() {
 
 function updateStats() {
   const total = players.length;
-  const paid = players.filter(p => Boolean(p.isPaid)).length;
-  const unpaid = total - paid;
-  const totalAmount = total * KIT_COST;
-  const paidAmount = paid * KIT_COST;
-  const unpaidAmount = unpaid * KIT_COST;
+  let totalCollected = 0;
+  let totalPending = 0;
+  let paidCount = 0;
+  let partialCount = 0;
+  let unpaidCount = 0;
+
+  players.forEach(p => {
+    const { amount, remaining, status } = getPaymentInfo(p);
+    totalCollected += amount;
+    totalPending += remaining;
+
+    if (status === 'paid') paidCount++;
+    else if (status === 'partial') partialCount++;
+    else unpaidCount++;
+  });
+
+  const totalOrderValue = total * KIT_COST;
 
   if (statTotalPlayers) statTotalPlayers.textContent = total;
-  if (statTotalAmount) statTotalAmount.textContent = `Total Value: Rs. ${totalAmount.toLocaleString()}`;
-  if (statPaidCount) statPaidCount.textContent = paid;
-  if (statPaidAmount) statPaidAmount.textContent = `Collected: Rs. ${paidAmount.toLocaleString()}`;
-  if (statUnpaidCount) statUnpaidCount.textContent = unpaid;
-  if (statUnpaidAmount) statUnpaidAmount.textContent = `Pending: Rs. ${unpaidAmount.toLocaleString()}`;
+  if (statTotalAmount) statTotalAmount.textContent = `Total Value: Rs. ${totalOrderValue.toLocaleString()}`;
+  if (statPaidAmount) statPaidAmount.textContent = `Rs. ${totalCollected.toLocaleString()}`;
+  if (statPaidBreakdown) statPaidBreakdown.textContent = `${paidCount} Full • ${partialCount} Partial`;
+  if (statUnpaidAmount) statUnpaidAmount.textContent = `Rs. ${totalPending.toLocaleString()}`;
+  if (statUnpaidCount) statUnpaidCount.textContent = `${unpaidCount} Unpaid players`;
 
   if (countAll) countAll.textContent = total;
-  if (countPaid) countPaid.textContent = paid;
-  if (countUnpaid) countUnpaid.textContent = unpaid;
+  if (countPaid) countPaid.textContent = paidCount;
+  if (countPartial) countPartial.textContent = partialCount;
+  if (countUnpaid) countUnpaid.textContent = unpaidCount;
 }
 
 function getFilteredPlayers() {
   return players.filter(p => {
-    const isPaid = Boolean(p.isPaid);
-    if (currentFilter === 'paid' && !isPaid) return false;
-    if (currentFilter === 'unpaid' && isPaid) return false;
+    const { status, amount } = getPaymentInfo(p);
+
+    if (currentFilter === 'paid' && status !== 'paid') return false;
+    if (currentFilter === 'partial' && status !== 'partial') return false;
+    if (currentFilter === 'unpaid' && status !== 'unpaid') return false;
 
     if (currentSearch) {
       const term = currentSearch.toLowerCase();
       const nameMatch = (p.name || '').toLowerCase().includes(term);
       const kitMatch = String(p.kitNumber || '').includes(term);
       const sizeMatch = (p.kitSize || '').toLowerCase().includes(term);
-      const paidMatch = (isPaid ? 'paid' : 'unpaid').includes(term);
-      return nameMatch || kitMatch || sizeMatch || paidMatch;
+      const statusMatch = status.includes(term);
+      const amountMatch = String(amount).includes(term);
+      return nameMatch || kitMatch || sizeMatch || statusMatch || amountMatch;
     }
     return true;
   });
@@ -137,11 +234,26 @@ function renderTable(data) {
 
   data.forEach(player => {
     const tr = document.createElement('tr');
-    const isPaid = Boolean(player.isPaid);
+    const { amount, remaining, status } = getPaymentInfo(player);
     
     let dateStr = 'N/A';
     if (player.createdAt) {
       dateStr = new Date(player.createdAt.toMillis ? player.createdAt.toMillis() : player.createdAt).toLocaleString();
+    }
+
+    let badgeHtml = '';
+    if (status === 'paid') {
+      badgeHtml = `<span class="badge badge-paid">✓ Paid (Rs. ${amount.toLocaleString()})</span>`;
+    } else if (status === 'partial') {
+      badgeHtml = `
+        <span class="badge badge-partial">⚡ Partial (Rs. ${amount.toLocaleString()})</span>
+        <span class="remaining-text">Due: Rs. ${remaining.toLocaleString()}</span>
+      `;
+    } else {
+      badgeHtml = `
+        <span class="badge badge-unpaid">⏳ Unpaid</span>
+        <span class="remaining-text">Due: Rs. ${KIT_COST.toLocaleString()}</span>
+      `;
     }
 
     tr.innerHTML = `
@@ -151,10 +263,13 @@ function renderTable(data) {
       <td>${escapeHTML(player.lengthSize)}</td>
       <td><span style="background:#f3f4f6; padding: 2px 8px; border-radius: 4px; font-weight:600;">${escapeHTML(player.kitSize)}</span></td>
       <td>
-        <label class="payment-cell" title="Click to toggle payment status">
-          <input type="checkbox" class="payment-checkbox" data-id="${player.id}" ${isPaid ? 'checked' : ''}>
-          <span class="badge ${isPaid ? 'badge-paid' : 'badge-unpaid'}">${isPaid ? '✓ Paid' : '⏳ Unpaid'}</span>
-        </label>
+        <div class="payment-cell">
+          <input type="checkbox" class="payment-checkbox" data-id="${player.id}" ${status === 'paid' ? 'checked' : ''} title="Check for Full Paid (Rs. 1,700), uncheck for Unpaid (Rs. 0)">
+          <div style="flex-grow: 1;">
+            ${badgeHtml}
+          </div>
+          <button type="button" class="quick-pay-btn open-payment-modal-btn" data-id="${player.id}" title="Set partial or custom payment amount">✏️ Pay</button>
+        </div>
       </td>
       <td style="font-size: 0.85rem; color: #4b5563;">${escapeHTML(dateStr)}</td>
       <td class="actions">
@@ -165,12 +280,21 @@ function renderTable(data) {
     playersTbody.appendChild(tr);
   });
 
-  // Direct payment toggle checkbox listener
+  // Checkbox toggle: Full Paid (1700) <-> Unpaid (0)
   document.querySelectorAll('.payment-checkbox').forEach(cb => {
     cb.addEventListener('change', async (e) => {
       const id = e.target.dataset.id;
       const isChecked = e.target.checked;
-      await togglePaymentStatus(id, isChecked);
+      const newAmount = isChecked ? KIT_COST : 0;
+      await setPlayerPayment(id, newAmount);
+    });
+  });
+
+  // Open Quick Payment Modal
+  document.querySelectorAll('.open-payment-modal-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      openQuickPaymentModal(id);
     });
   });
 
@@ -185,21 +309,72 @@ function renderTable(data) {
   });
 }
 
-async function togglePaymentStatus(playerId, isChecked) {
+async function setPlayerPayment(playerId, amount) {
   try {
     const docRef = doc(db, 'players', playerId);
+    const validAmount = Math.max(0, Number(amount) || 0);
+    const isPaid = validAmount >= KIT_COST;
+
     await updateDoc(docRef, {
-      isPaid: isChecked
+      paidAmount: validAmount,
+      isPaid: isPaid
     });
+
     const targetPlayer = players.find(p => p.id === playerId);
     const name = targetPlayer ? targetPlayer.name : 'Player';
-    showAlert(`${name} marked as ${isChecked ? 'PAID (Rs. 1,700)' : 'UNPAID'}`, 'success');
+
+    if (isPaid) {
+      showAlert(`${name} marked as FULL PAID (Rs. ${validAmount.toLocaleString()})`, 'success');
+    } else if (validAmount > 0) {
+      showAlert(`${name} marked as PARTIAL PAID (Rs. ${validAmount.toLocaleString()})`, 'success');
+    } else {
+      showAlert(`${name} marked as UNPAID`, 'success');
+    }
   } catch (error) {
     console.error("Failed to update payment status:", error);
-    showAlert("Failed to update payment status: " + error.message, "error");
-    renderTable(getFilteredPlayers()); // Revert checkbox in UI
+    showAlert("Failed to update payment: " + error.message, "error");
+    renderTable(getFilteredPlayers());
   }
 }
+
+// Quick Payment Modal
+function openQuickPaymentModal(id) {
+  const player = players.find(p => p.id === id);
+  if (!player) return;
+
+  const { amount } = getPaymentInfo(player);
+
+  quickPaymentPlayerId.value = player.id;
+  paymentPlayerInfo.textContent = `Player: ${player.name} (Kit #${player.kitNumber}) • Fixed Kit Cost: Rs. ${KIT_COST.toLocaleString()}`;
+  quickPaidAmountInput.value = amount;
+  updatePaymentHint(quickPaidAmountInput, quickPaymentHint);
+
+  paymentAlert.style.display = 'none';
+  paymentModal.classList.add('active');
+}
+
+const closePaymentModal = () => paymentModal.classList.remove('active');
+if (cancelPaymentBtn) cancelPaymentBtn.addEventListener('click', closePaymentModal);
+if (cancelPaymentXBtn) cancelPaymentXBtn.addEventListener('click', closePaymentModal);
+
+paymentForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  savePaymentBtn.disabled = true;
+  paymentAlert.style.display = 'none';
+
+  const playerId = quickPaymentPlayerId.value;
+  const newAmount = Number(quickPaidAmountInput.value) || 0;
+
+  try {
+    await setPlayerPayment(playerId, newAmount);
+    closePaymentModal();
+  } catch (err) {
+    paymentAlert.textContent = 'Failed to save payment: ' + err.message;
+    paymentAlert.style.display = 'block';
+  } finally {
+    savePaymentBtn.disabled = false;
+  }
+});
 
 function escapeHTML(str) {
   if (!str) return '';
@@ -245,22 +420,29 @@ exportBtn.addEventListener('click', () => {
     'Kit Size',
     'Payment Status',
     'Amount Paid (PKR)',
+    'Remaining Due (PKR)',
     'Registration Date'
   ];
   const csvRows = [];
   csvRows.push(headers.join(','));
 
   players.forEach(p => {
-    const isPaid = Boolean(p.isPaid);
+    const { amount, remaining, status } = getPaymentInfo(p);
     const dateStr = p.createdAt ? new Date(p.createdAt.toMillis ? p.createdAt.toMillis() : p.createdAt).toLocaleString().replace(/,/g, '') : 'N/A';
+    
+    let statusLabel = 'UNPAID';
+    if (status === 'paid') statusLabel = 'FULL PAID';
+    else if (status === 'partial') statusLabel = 'PARTIAL PAID';
+
     const values = [
       `"${(p.name || '').replace(/"/g, '""')}"`,
       p.kitNumber,
       `"${(p.chestSize || '').replace(/"/g, '""')}"`,
       `"${(p.lengthSize || '').replace(/"/g, '""')}"`,
       `"${p.kitSize || ''}"`,
-      isPaid ? 'PAID' : 'UNPAID',
-      isPaid ? KIT_COST : 0,
+      statusLabel,
+      amount,
+      remaining,
       `"${dateStr}"`
     ];
     csvRows.push(values.join(','));
@@ -277,7 +459,7 @@ exportBtn.addEventListener('click', () => {
   a.click();
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
-  showAlert('Player data with payment summary exported to CSV!', 'success');
+  showAlert('Player data with partial/full payments exported to CSV!', 'success');
 });
 
 // Add Player Modal Handling
@@ -285,6 +467,10 @@ if (addPlayerBtn && addModal) {
   addPlayerBtn.addEventListener('click', () => {
     addAlert.style.display = 'none';
     addForm.reset();
+    if (addPaidAmountInput) {
+      addPaidAmountInput.value = 0;
+      updatePaymentHint(addPaidAmountInput, addPaymentHint);
+    }
     addModal.classList.add('active');
   });
 
@@ -302,7 +488,7 @@ if (addPlayerBtn && addModal) {
     const addChest = document.getElementById('add-chest').value.trim();
     const addLength = document.getElementById('add-length').value.trim();
     const addKitSize = document.getElementById('add-kit-size').value;
-    const addPaid = document.getElementById('add-paid').checked;
+    const addPaidAmount = Number(addPaidAmountInput.value) || 0;
 
     try {
       const primaryDocRef = doc(db, 'players', addKit);
@@ -311,7 +497,7 @@ if (addPlayerBtn && addModal) {
       let targetDocRef = primaryDocRef;
       let isOverride = false;
 
-      // If document already exists, admin override creates a unique doc ID without overwriting
+      // Admin override: if kit taken, create unique doc ID so we don't overwrite existing player
       if (primaryDocSnap.exists()) {
         targetDocRef = doc(db, 'players', `${addKit}_admin_${Date.now()}`);
         isOverride = true;
@@ -323,7 +509,8 @@ if (addPlayerBtn && addModal) {
         chestSize: addChest,
         lengthSize: addLength,
         kitSize: addKitSize,
-        isPaid: addPaid,
+        paidAmount: addPaidAmount,
+        isPaid: addPaidAmount >= KIT_COST,
         createdAt: serverTimestamp()
       });
 
@@ -348,6 +535,8 @@ function openEditModal(id) {
   const player = players.find(p => p.id === id);
   if (!player) return;
 
+  const { amount } = getPaymentInfo(player);
+
   document.getElementById('edit-player-id').value = player.id;
   document.getElementById('edit-original-kit').value = player.kitNumber;
   document.getElementById('edit-name').value = player.name || '';
@@ -355,7 +544,11 @@ function openEditModal(id) {
   document.getElementById('edit-chest').value = player.chestSize || '';
   document.getElementById('edit-length').value = player.lengthSize || '';
   document.getElementById('edit-kit-size').value = player.kitSize || 'M';
-  document.getElementById('edit-paid').checked = Boolean(player.isPaid);
+
+  if (editPaidAmountInput) {
+    editPaidAmountInput.value = amount;
+    updatePaymentHint(editPaidAmountInput, editPaymentHint);
+  }
   
   editAlert.style.display = 'none';
   editModal.classList.add('active');
@@ -377,7 +570,7 @@ editForm.addEventListener('submit', async (e) => {
   const newChest = document.getElementById('edit-chest').value.trim();
   const newLength = document.getElementById('edit-length').value.trim();
   const newKitSize = document.getElementById('edit-kit-size').value;
-  const newPaid = document.getElementById('edit-paid').checked;
+  const newPaidAmount = Number(editPaidAmountInput.value) || 0;
 
   const oldPlayer = players.find(p => p.id === playerId);
   if (!oldPlayer) {
@@ -395,7 +588,6 @@ editForm.addEventListener('submit', async (e) => {
       let isOverride = false;
 
       if (primaryDocSnap.exists() && primaryDocRef.id !== playerId) {
-        // Taken by someone else: create unique doc ID so we don't destroy existing player's record
         targetDocRef = doc(db, 'players', `${newKit}_admin_${Date.now()}`);
         isOverride = true;
       } else {
@@ -408,13 +600,14 @@ editForm.addEventListener('submit', async (e) => {
         chestSize: newChest,
         lengthSize: newLength,
         kitSize: newKitSize,
-        isPaid: newPaid,
+        paidAmount: newPaidAmount,
+        isPaid: newPaidAmount >= KIT_COST,
         createdAt: oldPlayer.createdAt || serverTimestamp()
       };
 
       await setDoc(targetDocRef, updatedData);
 
-      // If document ID changed, delete the old document
+      // If document ID changed, delete old document
       if (targetDocRef.id !== playerId) {
         await deleteDoc(doc(db, 'players', playerId));
       }
@@ -426,7 +619,7 @@ editForm.addEventListener('submit', async (e) => {
         showAlert(`Player updated successfully with Kit #${newKit}`, 'success');
       }
     } else {
-      // Kit number is the same, simply update document
+      // Kit number did not change, update existing document
       const docRef = doc(db, 'players', playerId);
       await updateDoc(docRef, {
         name: newName,
@@ -434,7 +627,8 @@ editForm.addEventListener('submit', async (e) => {
         chestSize: newChest,
         lengthSize: newLength,
         kitSize: newKitSize,
-        isPaid: newPaid
+        paidAmount: newPaidAmount,
+        isPaid: newPaidAmount >= KIT_COST
       });
 
       closeEditModal();
@@ -469,11 +663,11 @@ confirmDeleteBtn.addEventListener('click', async () => {
 
     await deleteDoc(doc(db, 'players', deletePlayerId));
 
-    // If deleted doc was primary doc (e.g. "10"), check if another player had kit 10 (e.g. "10_admin_xxx")
-    // Promote them to primary doc "10" to keep kit 10 reserved in Firestore
+    // If deleted doc was primary doc (e.g. "10"), promote another player with kit 10 if one exists
     if (deletedKit !== null && deletePlayerId === String(deletedKit)) {
       const otherPlayerWithSameKit = players.find(p => p.id !== deletePlayerId && Number(p.kitNumber) === deletedKit);
       if (otherPlayerWithSameKit) {
+        const { amount } = getPaymentInfo(otherPlayerWithSameKit);
         const primaryRef = doc(db, 'players', String(deletedKit));
         const dataToPromote = {
           name: otherPlayerWithSameKit.name,
@@ -481,7 +675,8 @@ confirmDeleteBtn.addEventListener('click', async () => {
           chestSize: otherPlayerWithSameKit.chestSize,
           lengthSize: otherPlayerWithSameKit.lengthSize,
           kitSize: otherPlayerWithSameKit.kitSize,
-          isPaid: Boolean(otherPlayerWithSameKit.isPaid),
+          paidAmount: amount,
+          isPaid: amount >= KIT_COST,
           createdAt: otherPlayerWithSameKit.createdAt || serverTimestamp()
         };
         await setDoc(primaryRef, dataToPromote);

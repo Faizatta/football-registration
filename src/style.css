@@ -384,9 +384,126 @@ th {
   color: #065f46;
 }
 
+.badge-partial {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
 .badge-unpaid {
   background-color: #fee2e2;
   color: #991b1b;
+}
+
+.remaining-text {
+  display: block;
+  font-size: 0.74rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.quick-pay-btn {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  padding: 3px 7px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  width: auto;
+}
+
+.quick-pay-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+/* Payment Box & Inputs in Modals */
+.payment-box {
+  background-color: #f9fafb;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.payment-input-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: #ffffff;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.currency-prefix {
+  padding: 8px 12px;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-right: 1px solid var(--border);
+}
+
+.payment-input-group input {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 10px 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  width: 100%;
+}
+
+.payment-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.btn-preset {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  width: auto;
+  transition: all 0.15s ease;
+}
+
+.btn-preset:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-preset-full {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.btn-preset-full:hover {
+  background: #d1fae5;
+}
+
+.payment-summary-hint {
+  font-size: 0.82rem;
+  color: #4b5563;
+  background: #ffffff;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px dashed var(--border);
 }
 
 .checkbox-group {

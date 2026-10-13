@@ -21,14 +21,14 @@
           <div class="stat-sub" id="stat-total-amount">Total Value: Rs. 0</div>
         </div>
         <div class="stat-card stat-paid">
-          <div class="stat-label">Payments Received</div>
-          <div class="stat-value" id="stat-paid-count">0</div>
-          <div class="stat-sub" id="stat-paid-amount">Collected: Rs. 0</div>
+          <div class="stat-label">Total Collected</div>
+          <div class="stat-value" id="stat-paid-amount">Rs. 0</div>
+          <div class="stat-sub" id="stat-paid-breakdown">0 Full • 0 Partial</div>
         </div>
         <div class="stat-card stat-unpaid">
-          <div class="stat-label">Pending Payments</div>
-          <div class="stat-value" id="stat-unpaid-count">0</div>
-          <div class="stat-sub" id="stat-unpaid-amount">Pending: Rs. 0</div>
+          <div class="stat-label">Total Pending</div>
+          <div class="stat-value" id="stat-unpaid-amount">Rs. 0</div>
+          <div class="stat-sub" id="stat-unpaid-count">0 Unpaid players</div>
         </div>
         <div class="stat-card stat-rate">
           <div class="stat-label">Kit Rate</div>
@@ -42,6 +42,7 @@
         <div class="filter-tabs">
           <button type="button" class="filter-tab active" data-filter="all" id="filter-all">All (<span id="count-all">0</span>)</button>
           <button type="button" class="filter-tab" data-filter="paid" id="filter-paid">Paid (<span id="count-paid">0</span>)</button>
+          <button type="button" class="filter-tab" data-filter="partial" id="filter-partial">Partial (<span id="count-partial">0</span>)</button>
           <button type="button" class="filter-tab" data-filter="unpaid" id="filter-unpaid">Unpaid (<span id="count-unpaid">0</span>)</button>
         </div>
         <div class="toolbar-actions">
@@ -62,7 +63,7 @@
               <th>Chest</th>
               <th>Length</th>
               <th>Size</th>
-              <th>Payment (Rs. 1,700)</th>
+              <th>Payment Details (Kit: Rs. 1,700)</th>
               <th>Registration Date</th>
               <th>Actions</th>
             </tr>
@@ -71,6 +72,42 @@
             <!-- Rows injected by JS -->
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Quick Payment Modal -->
+    <div id="payment-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Update Payment</h2>
+          <button type="button" id="cancel-payment-x" class="close-btn">&times;</button>
+        </div>
+        <p class="modal-subtitle" id="payment-player-info">Player details</p>
+        <div id="payment-alert" class="alert error"></div>
+        <form id="payment-form">
+          <input type="hidden" id="quick-payment-player-id">
+          <div class="form-group payment-box">
+            <label>Amount Paid (PKR)</label>
+            <div class="payment-input-group">
+              <span class="currency-prefix">Rs.</span>
+              <input type="number" id="quick-paid-amount" min="0" max="1700" placeholder="0" value="0" required>
+            </div>
+            <div class="payment-presets">
+              <button type="button" class="btn-preset" data-target="quick" data-val="0">Unpaid (Rs. 0)</button>
+              <button type="button" class="btn-preset" data-target="quick" data-val="500">Rs. 500</button>
+              <button type="button" class="btn-preset" data-target="quick" data-val="850">Rs. 850 (Half)</button>
+              <button type="button" class="btn-preset" data-target="quick" data-val="1000">Rs. 1,000</button>
+              <button type="button" class="btn-preset btn-preset-full" data-target="quick" data-val="1700">Full Paid (Rs. 1,700)</button>
+            </div>
+            <div class="payment-summary-hint" id="quick-payment-hint">
+              Remaining Due: <strong>Rs. 1,700</strong>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="cancel-payment" class="btn-secondary">Cancel</button>
+            <button type="submit" id="save-payment" class="btn-primary">Save Payment</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -118,11 +155,22 @@
               <option value="5XL">5XL</option>
             </select>
           </div>
-          <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="add-paid">
-              <span>Payment Received (Rs. 1,700)</span>
-            </label>
+          <div class="form-group payment-box">
+            <label>Payment Received (PKR)</label>
+            <div class="payment-input-group">
+              <span class="currency-prefix">Rs.</span>
+              <input type="number" id="add-paid-amount" min="0" max="1700" placeholder="0" value="0">
+            </div>
+            <div class="payment-presets">
+              <button type="button" class="btn-preset" data-target="add" data-val="0">Unpaid (Rs. 0)</button>
+              <button type="button" class="btn-preset" data-target="add" data-val="500">Rs. 500</button>
+              <button type="button" class="btn-preset" data-target="add" data-val="850">Rs. 850 (Half)</button>
+              <button type="button" class="btn-preset" data-target="add" data-val="1000">Rs. 1,000</button>
+              <button type="button" class="btn-preset btn-preset-full" data-target="add" data-val="1700">Full Paid (Rs. 1,700)</button>
+            </div>
+            <div class="payment-summary-hint" id="add-payment-hint">
+              Remaining Due: <strong>Rs. 1,700</strong>
+            </div>
           </div>
           <div class="modal-actions">
             <button type="button" id="cancel-add" class="btn-secondary">Cancel</button>
@@ -181,11 +229,22 @@
               <option value="Large">Large</option>
             </select>
           </div>
-          <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="edit-paid">
-              <span>Payment Received (Rs. 1,700)</span>
-            </label>
+          <div class="form-group payment-box">
+            <label>Payment Received (PKR)</label>
+            <div class="payment-input-group">
+              <span class="currency-prefix">Rs.</span>
+              <input type="number" id="edit-paid-amount" min="0" max="1700" placeholder="0" value="0">
+            </div>
+            <div class="payment-presets">
+              <button type="button" class="btn-preset" data-target="edit" data-val="0">Unpaid (Rs. 0)</button>
+              <button type="button" class="btn-preset" data-target="edit" data-val="500">Rs. 500</button>
+              <button type="button" class="btn-preset" data-target="edit" data-val="850">Rs. 850 (Half)</button>
+              <button type="button" class="btn-preset" data-target="edit" data-val="1000">Rs. 1,000</button>
+              <button type="button" class="btn-preset btn-preset-full" data-target="edit" data-val="1700">Full Paid (Rs. 1,700)</button>
+            </div>
+            <div class="payment-summary-hint" id="edit-payment-hint">
+              Remaining Due: <strong>Rs. 1,700</strong>
+            </div>
           </div>
           <div class="modal-actions">
             <button type="button" id="cancel-edit" class="btn-secondary">Cancel</button>
